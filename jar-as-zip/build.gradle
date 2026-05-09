@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group = 'example'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation 'com.amazonaws:aws-lambda-java-core:1.4.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
+}
+
+jar {
+    archiveFileName = 'function.jar'
+
+    from sourceSets.main.output
+
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
