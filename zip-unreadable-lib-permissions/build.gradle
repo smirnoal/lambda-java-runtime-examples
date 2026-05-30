@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+}
+
+group = 'example'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation 'com.amazonaws:aws-lambda-java-core:1.4.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
+}
+
+tasks.register('handlerJar', Jar) {
+    archiveFileName = 'handler.jar'
+    from sourceSets.main.output
+}
+
+tasks.register('lambdaJar', Zip) {
+    archiveFileName = 'function.jar'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    dependsOn handlerJar
+
+    into('lib') {
+        from(tasks.named('handlerJar', Jar).flatMap { it.archiveFile }) {
+            rename { 'function.jar' }
+        }
+        from configurations.runtimeClasspath
+
+        eachFile { file ->
+            if (file.name.startsWith('gson-')) {
+                file.permissions {
+                    unix('000')
+                }
+            }
+        }
+    }
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('lambdaJar')
+}

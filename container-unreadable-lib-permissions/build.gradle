@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+}
+
+group = 'example'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation 'com.amazonaws:aws-lambda-java-core:1.4.0'
+    implementation 'com.google.code.gson:gson:2.14.0'
+}
+
+jar {
+    archiveFileName = 'function.jar'
+}
+
+tasks.register('copyRuntimeDependencies', Copy) {
+    from configurations.runtimeClasspath
+    into layout.buildDirectory.dir('dependency')
+}
+
+tasks.register('prepareImage') {
+    dependsOn jar
+    dependsOn copyRuntimeDependencies
+}
